@@ -146,6 +146,21 @@
       padding: 12px;
       font-weight: 800;
       cursor: pointer;
+      transition: background .2s ease, border-color .2s ease, opacity .2s ease, transform .2s ease;
+    }
+
+    button:hover {
+      border-color: #3b6fb1;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      transform: none;
     }
 
     button.active {
@@ -155,12 +170,13 @@
 
     .btns {
       display: grid;
-      grid-template-columns: 1.3fr 1fr 1fr;
+      grid-template-columns: 1.3fr 1fr;
       gap: 8px;
-      margin: 14px 0;
+      margin: 14px 0 10px;
     }
 
-    .btns .primary {
+    .btns .primary,
+    .mobile-cta button.primary {
       background: #1c57e3;
       border-color: #4a84ff;
     }
@@ -174,11 +190,14 @@
       justify-content: space-between;
       margin-bottom: 6px;
       font-size: 14px;
+      gap: 10px;
     }
 
     .value {
       color: var(--yellow);
-      font-weight: 800;
+      font-weight: 900;
+      font-size: 15px;
+      white-space: nowrap;
     }
 
     input[type="range"] {
@@ -205,6 +224,7 @@
       height: 12px;
       border-radius: 50%;
       display: inline-block;
+      flex: 0 0 12px;
     }
 
     .message {
@@ -335,6 +355,31 @@
       background: var(--warn);
     }
 
+    .section-toggle {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      background: #0b1830;
+      border-radius: 12px;
+    }
+
+    .section-toggle::after {
+      content: "";
+    }
+
+    .collapsible {
+      overflow: hidden;
+    }
+
+    .mobile-only {
+      display: none;
+    }
+
+    .desktop-only {
+      display: block;
+    }
+
     @media (max-width: 1220px) {
       .layout {
         grid-template-columns: 1fr;
@@ -360,6 +405,7 @@
     @media (max-width: 740px) {
       .wrap {
         padding: 12px;
+        padding-bottom: 110px;
       }
 
       h1 {
@@ -380,14 +426,15 @@
         gap: 12px;
       }
 
-      .right {
+      /* 모바일에서 설정이 먼저 오도록 변경 */
+      .left {
         order: 1;
-        padding: 10px;
+        padding: 14px;
       }
 
-      .left {
+      .right {
         order: 2;
-        padding: 14px;
+        padding: 10px;
       }
 
       .right-head {
@@ -401,6 +448,12 @@
       .badge {
         font-size: 12px;
         padding: 7px 10px;
+      }
+
+      /* 모바일에선 핵심 정보만 노출 */
+      #globalBadge,
+      #latencyBadge {
+        display: none;
       }
 
       .corner-box {
@@ -417,6 +470,10 @@
         grid-template-columns: 1fr;
       }
 
+      .desktop-btns #runBtn {
+        display: none;
+      }
+
       button {
         min-height: 48px;
         font-size: 15px;
@@ -428,14 +485,18 @@
         line-height: 1.4;
       }
 
+      .value {
+        font-size: 16px;
+      }
+
       input[type="range"] {
         height: 32px;
       }
 
       canvas {
-        height: 48vh;
-        min-height: 300px;
-        max-height: 420px;
+        height: 60vh;
+        min-height: 360px;
+        max-height: 520px;
       }
 
       .stats {
@@ -451,7 +512,7 @@
         font-size: 18px;
       }
 
-      .card:nth-child(n+5) {
+      .stats.collapsed .card:nth-child(n+5) {
         display: none;
       }
 
@@ -470,19 +531,16 @@
       .mini-grid {
         grid-template-columns: 1fr;
       }
-    }
 
-    .mobile-cta {
-      display: none;
-    }
-
-    @media (max-width: 740px) {
-
-      .wrap {
-        padding-bottom: 110px;
+      .mobile-only {
+        display: block;
       }
 
-      .desktop-btns #runBtn {
+      .desktop-only {
+        display: none !important;
+      }
+
+      .legend.collapsed {
         display: none;
       }
 
@@ -493,7 +551,7 @@
         right: 0;
         bottom: 0;
         padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
-        background: linear-gradient(180deg, rgba(7,17,31,0), rgba(7,17,31,.92) 30%, rgba(7,17,31,.98) 100%);
+        background: linear-gradient(180deg, rgba(7, 17, 31, 0), rgba(7, 17, 31, .92) 30%, rgba(7, 17, 31, .98) 100%);
         z-index: 9999;
       }
 
@@ -505,16 +563,19 @@
         font-weight: 800;
       }
     }
+
+    .mobile-cta {
+      display: none;
+    }
   </style>
 </head>
 
 <body>
   <div class="wrap">
-    <!-- <h1>Fast and Scalable Distributed Consensus Demo</h1> -->
-
     <div class="layout">
       <div class="panel left">
         <h2>데모 설정</h2>
+
         <div class="seg">
           <button id="modeCB" class="active">CB-EC</button>
           <button id="modeGB">GB-RC</button>
@@ -524,14 +585,17 @@
           <label>로컬 네트워크 격자 <span class="value" id="gridVal">4 × 4</span></label>
           <input id="grid" type="range" min="3" max="5" step="1" value="4">
         </div>
+
         <div class="field">
           <label>로컬당 노드 수 <span class="value" id="nodesVal">15</span></label>
           <input id="nodes" type="range" min="8" max="20" step="1" value="15">
         </div>
+
         <div class="field">
           <label>오류 노드 비율 <span class="value" id="faultVal">20%</span></label>
           <input id="fault" type="range" min="0" max="45" step="1" value="20">
         </div>
+
         <div class="field">
           <label>재생 속도 <span class="value" id="speedVal">1.0x</span></label>
           <input id="speed" type="range" min="5" max="20" step="1" value="5">
@@ -542,16 +606,16 @@
           <button id="resetBtn">초기화</button>
         </div>
 
-        <div class="legend">
+        <button id="legendToggle" class="section-toggle mobile-only">노드 설명 보기</button>
+
+        <div class="legend collapsed" id="legendBox">
           <div class="legend-item"><span class="dot" style="background:var(--blue)"></span>일반 노드</div>
           <div class="legend-item"><span class="dot" style="background:var(--red)"></span>오류 노드</div>
           <div class="legend-item"><span class="dot" style="background:var(--yellow)"></span>로컬 계산 / commit</div>
           <div class="legend-item"><span class="dot" style="background:var(--green)"></span>합의 완료</div>
           <div class="legend-item"><span class="dot" style="background:var(--purple)"></span>대표 노드 / proposer</div>
-          <div class="legend-item"><span class="dot" style="background:var(--cyan)"></span>전역 전송 / cooperative pulse
-          </div>
+          <div class="legend-item"><span class="dot" style="background:var(--cyan)"></span>전역 전송 / cooperative pulse</div>
         </div>
-
       </div>
 
       <div class="panel right">
@@ -564,8 +628,10 @@
             <div class="badge" id="latencyBadge">예상 지연: -</div>
           </div>
         </div>
+
         <canvas id="stage" width="1120" height="760"></canvas>
-        <div class="stats">
+
+        <div class="stats collapsed" id="statsBox">
           <div class="card">
             <div class="k">전체 노드</div>
             <div class="v" id="totalNodes">0</div>
@@ -599,6 +665,8 @@
             <div class="v" id="latencyView">0 슬롯</div>
           </div>
         </div>
+
+        <button id="statsToggle" class="section-toggle mobile-only">상세 지표 더보기</button>
       </div>
     </div>
   </div>
@@ -610,28 +678,68 @@
   <script>
     const canvas = document.getElementById('stage');
     const ctx = canvas.getContext('2d');
+
     const els = {
-      modeCB: document.getElementById('modeCB'), modeGB: document.getElementById('modeGB'),
-      grid: document.getElementById('grid'), nodes: document.getElementById('nodes'), fault: document.getElementById('fault'), speed: document.getElementById('speed'),
-      gridVal: document.getElementById('gridVal'), nodesVal: document.getElementById('nodesVal'), faultVal: document.getElementById('faultVal'), speedVal: document.getElementById('speedVal'),
-      runBtn: document.getElementById('runBtn'), stepBtn: document.getElementById('stepBtn'), resetBtn: document.getElementById('resetBtn'),
-      modeBadge: document.getElementById('modeBadge'), phaseBadge: document.getElementById('phaseBadge'), progressBadge: document.getElementById('progressBadge'), globalBadge: document.getElementById('globalBadge'), latencyBadge: document.getElementById('latencyBadge'),
-      totalNodes: document.getElementById('totalNodes'), faultyNodes: document.getElementById('faultyNodes'), localsCount: document.getElementById('localsCount'), validLocals: document.getElementById('validLocals'), faultyLocals: document.getElementById('faultyLocals'), splitLocals: document.getElementById('splitLocals'), messageCount: document.getElementById('messageCount'), latencyView: document.getElementById('latencyView')
+      modeCB: document.getElementById('modeCB'),
+      modeGB: document.getElementById('modeGB'),
+      grid: document.getElementById('grid'),
+      nodes: document.getElementById('nodes'),
+      fault: document.getElementById('fault'),
+      speed: document.getElementById('speed'),
+      gridVal: document.getElementById('gridVal'),
+      nodesVal: document.getElementById('nodesVal'),
+      faultVal: document.getElementById('faultVal'),
+      speedVal: document.getElementById('speedVal'),
+      runBtn: document.getElementById('runBtn'),
+      resetBtn: document.getElementById('resetBtn'),
+      mobileRunBtn: document.getElementById('mobileRunBtn'),
+      modeBadge: document.getElementById('modeBadge'),
+      phaseBadge: document.getElementById('phaseBadge'),
+      progressBadge: document.getElementById('progressBadge'),
+      globalBadge: document.getElementById('globalBadge'),
+      latencyBadge: document.getElementById('latencyBadge'),
+      totalNodes: document.getElementById('totalNodes'),
+      faultyNodes: document.getElementById('faultyNodes'),
+      localsCount: document.getElementById('localsCount'),
+      validLocals: document.getElementById('validLocals'),
+      faultyLocals: document.getElementById('faultyLocals'),
+      splitLocals: document.getElementById('splitLocals'),
+      messageCount: document.getElementById('messageCount'),
+      latencyView: document.getElementById('latencyView'),
+      legendToggle: document.getElementById('legendToggle'),
+      legendBox: document.getElementById('legendBox'),
+      statsToggle: document.getElementById('statsToggle'),
+      statsBox: document.getElementById('statsBox')
     };
 
     const C = {
-      blue: '#4da3ff', red: '#ff637d', yellow: '#ffb020', green: '#26d96f', cyan: '#35d8f6', purple: '#b88cff',
-      border: 'rgba(56,144,219,.9)', faint: 'rgba(133,166,206,.18)', faint2: 'rgba(133,166,206,.08)',
-      panelText: '#e8f0fb', muted: '#90a8c6', white: '#f7fbff'
+      blue: '#4da3ff',
+      red: '#ff637d',
+      yellow: '#ffb020',
+      green: '#26d96f',
+      cyan: '#35d8f6',
+      purple: '#b88cff',
+      border: 'rgba(56,144,219,.9)',
+      faint: 'rgba(133,166,206,.18)',
+      faint2: 'rgba(133,166,206,.08)',
+      panelText: '#e8f0fb',
+      muted: '#90a8c6',
+      white: '#f7fbff'
     };
 
     let mode = 'CB';
     let sim = null;
+    let legendExpanded = false;
+    let statsExpanded = false;
+
+    function isMobile() {
+      return window.innerWidth <= 740;
+    }
 
     function rand(a, b) { return Math.random() * (b - a) + a; }
     function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
     function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
-    function fmtPct(v) { return `${(v * 100).toFixed(1)}%`; }
+
     function updateLabels() {
       els.gridVal.textContent = `${els.grid.value} × ${els.grid.value}`;
       els.nodesVal.textContent = els.nodes.value;
@@ -715,6 +823,7 @@
       const globalTerm = 2 * D * (K + 1) * gfunc(N - D, epsBar, params.zeta);
       return T * (localTerm + globalTerm) * tauSlot(params);
     }
+
     function createSim() {
       const g = Number(els.grid.value);
       const npl = Number(els.nodes.value);
@@ -747,6 +856,7 @@
           const cx = local.x + local.w / 2;
           const cy = local.y + local.h / 2;
           const radius = Math.min(local.w, local.h) * 0.33;
+
           for (let i = 0; i < npl; i++) {
             const ang = (Math.PI * 2 * i / npl) + rand(-0.22, 0.22);
             const rr = radius * Math.sqrt((i + 1) / npl) * rand(0.45, 1.0);
@@ -754,7 +864,11 @@
               id: nodeId++, localId: local.id,
               x: clamp(cx + Math.cos(ang) * rr + rand(-12, 12), local.x + 16, local.x + local.w - 16),
               y: clamp(cy + Math.sin(ang) * rr + rand(-12, 12), local.y + 26, local.y + local.h - 16),
-              faulty: false, display: 'base', rep: false, proposer: false, pulse: Math.random() * Math.PI * 2
+              faulty: false,
+              display: 'base',
+              rep: false,
+              proposer: false,
+              pulse: Math.random() * Math.PI * 2
             };
             local.nodes.push(node);
             nodes.push(node);
@@ -775,6 +889,7 @@
         local.redCount = local.nodes.filter(n => n.faulty).length;
         local.majority = local.greenCount > local.redCount ? 'green' : (local.redCount > local.greenCount ? 'red' : 'split');
         local.statusText = makeLocalLabel(local);
+
         if (local.majority === 'green') {
           local.representative = local.nodes.find(n => !n.faulty) || local.nodes[0];
         } else if (local.majority === 'red') {
@@ -782,6 +897,7 @@
         } else {
           local.representative = local.nodes[Math.floor(Math.random() * local.nodes.length)];
         }
+
         local.representative.rep = true;
       }
 
@@ -814,7 +930,6 @@
       const messagesEstimate = mode === 'CB'
         ? (1 + g * g * npl + g * g) * 2
         : Math.round(nodes.length * 2.7 + repEdges.length * 3);
-      
 
       const params = {
         Pt: 100,
@@ -835,10 +950,11 @@
 
       sim = {
         g, npl, faultRate, locals, nodes, packets, pulses, repEdges,
-        phase: 0, progress: 0, running: false, lastTs: 0, phaseTimer: 0,
+        phase: 0, progress: 0, running: false, finished: false,
+        lastTs: 0, phaseTimer: 0,
         globalMajority, validCount, faultyCount, splitCount,
-        phaseNames: phases, phaseDurations, messageEstimate: messagesEstimate, latency,
-        faultyNodes: faultTarget
+        phaseNames: phases, phaseDurations, messageEstimate: messagesEstimate,
+        latency, faultyNodes: faultTarget
       };
 
       els.totalNodes.textContent = nodes.length;
@@ -848,37 +964,71 @@
       els.faultyLocals.textContent = faultyCount;
       els.splitLocals.textContent = splitCount;
       els.messageCount.textContent = messagesEstimate;
-
-      
       els.latencyView.textContent = `${Math.round(latency)} 슬롯`;
       els.latencyBadge.textContent = `예상 지연: ${Math.round(latency)} 슬롯`;
+
       syncBadges();
-      //renderPhaseList();
+      updateMobileCTA();
       draw();
     }
-
-    function setMessage(html) { }
 
     function getGlobalLabel() {
       if (!sim) return '-';
       return sim.globalMajority === 'green' ? '정상' : sim.globalMajority === 'red' ? '비정상' : '미결정';
     }
 
-    function renderPhaseList() { }
-
     function syncBadges() {
       if (!sim) return;
-      const done = sim.phase >= sim.phaseNames.length - 1 && !sim.running;
+      const done = sim.finished || (sim.phase >= sim.phaseNames.length - 1 && !sim.running);
       els.modeBadge.textContent = `모드: ${mode === 'CB' ? 'CB-EC' : 'GB-RC'}`;
       els.phaseBadge.textContent = `단계: ${sim.phaseNames[sim.phase] || '완료'}`;
       els.progressBadge.textContent = `진행률 ${Math.round(sim.progress * 100)}%`;
       els.globalBadge.textContent = done ? `전체 합의: ${getGlobalLabel()}` : '전체 합의: 계산 중';
-      renderPhaseList();
+    }
+
+    function updateMobileCTA() {
+      if (!els.mobileRunBtn) return;
+
+      if (!sim) {
+        els.mobileRunBtn.textContent = '데모 실행';
+        els.mobileRunBtn.disabled = false;
+        return;
+      }
+
+      if (sim.running) {
+        els.mobileRunBtn.textContent = '실행 중...';
+        els.mobileRunBtn.disabled = true;
+      } else if (sim.finished) {
+        els.mobileRunBtn.textContent = '다시 실행';
+        els.mobileRunBtn.disabled = false;
+      } else {
+        els.mobileRunBtn.textContent = '데모 실행';
+        els.mobileRunBtn.disabled = false;
+      }
+    }
+
+    function updateCollapsibleUI() {
+      if (els.legendBox) {
+        els.legendBox.classList.toggle('collapsed', !legendExpanded && isMobile());
+      }
+      if (els.legendToggle) {
+        els.legendToggle.textContent = legendExpanded ? '노드 설명 접기' : '노드 설명 보기';
+      }
+      if (els.statsBox) {
+        els.statsBox.classList.toggle('collapsed', !statsExpanded && isMobile());
+      }
+      if (els.statsToggle) {
+        els.statsToggle.textContent = statsExpanded ? '상세 지표 접기' : '상세 지표 더보기';
+      }
     }
 
     function makePacket(a, b, type) {
       const speedMul = Number(els.speed.value) / 10;
-      const base = type === 'global' ? rand(0.0016, 0.0028) : type === 'relay' ? rand(0.0021, 0.0035) : rand(0.0030, 0.0050);
+      const base = type === 'global'
+        ? rand(0.0016, 0.0028)
+        : type === 'relay'
+          ? rand(0.0021, 0.0035)
+          : rand(0.0030, 0.0050);
       return { a, b, type, t: 0, speed: base * speedMul };
     }
 
@@ -893,25 +1043,25 @@
       sim.phaseTimer = 0;
       sim.packets.length = 0;
       sim.pulses.length = 0;
+
       for (const local of sim.locals) {
         local.phaseState = 'idle';
         local.localCommitProgress = 0;
         local.semiglobalReady = false;
         local.globalReceived = false;
       }
+
       for (const node of sim.nodes) node.display = node.faulty ? 'faulty' : 'base';
       sim.locals[0].proposer.display = 'rep';
 
       if (mode === 'CB') {
         if (phase === 0) {
           addPulse(sim.locals[0], 'proposal');
-          setMessage('<strong>Phase 1: Proposal</strong>');
         } else if (phase === 1) {
           for (const local of sim.locals) {
             local.phaseState = 'counting';
             for (const n of local.nodes) n.display = n.faulty ? 'faulty' : 'counting';
           }
-          setMessage('<strong>Phase 2: Local Validation</strong>');
         } else if (phase === 2) {
           for (const local of sim.locals) {
             local.phaseState = 'commit';
@@ -923,7 +1073,6 @@
             }
             addPulse(local, 'local');
           }
-          setMessage('<strong>Phase 3: Local Commit</strong>');
         } else if (phase === 3) {
           for (const local of sim.locals) {
             local.phaseState = local.majority;
@@ -933,7 +1082,6 @@
             const center = { x: canvas.width * 0.5, y: canvas.height * 0.52 };
             sim.packets.push(makePacket(local.representative, center, 'global'));
           }
-          setMessage('<strong>Phase 4: Semi-global Validation</strong>');
         } else if (phase === 4) {
           for (const local of sim.locals) {
             local.phaseState = local.majority;
@@ -944,75 +1092,68 @@
             }
             local.representative.display = 'rep';
           }
-          setMessage(`<strong>Phase 5: Global Consensus</strong><br><strong>${getGlobalLabel()}</strong>`);
         }
       } else {
         if (phase === 0) {
           const p = sim.locals[0].proposer;
-          for (const [a, b] of sim.repEdges) if (a === p || b === p) sim.packets.push(makePacket(a, b, 'relay'));
-          setMessage('<strong>Phase 1: Proposal</strong>');
+          for (const [a, b] of sim.repEdges) {
+            if (a === p || b === p) sim.packets.push(makePacket(a, b, 'relay'));
+          }
         } else if (phase === 1) {
           for (const local of sim.locals) {
             local.phaseState = 'counting';
             for (const n of local.nodes) n.display = n.faulty ? 'faulty' : 'counting';
           }
-          setMessage('<strong>Phase 2: Local Validation</strong>');
         } else if (phase === 2) {
           for (const [a, b] of sim.repEdges) sim.packets.push(makePacket(a, b, 'relay'));
           for (const local of sim.locals) local.representative.display = 'rep';
-          setMessage('<strong>Phase 3: Commit</strong>');
         } else if (phase === 3) {
           for (const [a, b] of sim.repEdges) sim.packets.push(makePacket(a, b, 'global'));
           for (const local of sim.locals) {
             local.phaseState = local.majority;
             local.semiglobalReady = true;
           }
-          setMessage('<strong>Phase 4: Global Validation</strong>');
         } else if (phase === 4) {
           for (const local of sim.locals) {
             local.globalReceived = true;
-            for (const n of local.nodes) n.display = n.faulty ? 'faulty' : (sim.globalMajority === 'green' ? 'agreed' : 'counting');
+            for (const n of local.nodes) {
+              n.display = n.faulty ? 'faulty' : (sim.globalMajority === 'green' ? 'agreed' : 'counting');
+            }
             local.representative.display = 'rep';
           }
-          setMessage(`<strong>Phase 5: Global Consensus</strong><br><strong>${getGlobalLabel()}</strong>`);
         }
       }
+
       syncBadges();
+      updateMobileCTA();
       draw();
-    }
-
-    function nextPhase() {
-      if (!sim) createSim();
-
-      const last = sim.phaseNames.length - 1;
-
-      if (sim.phase < last) {
-        applyPhase(sim.phase + 1);
-      } else {
-        sim.finished = true;
-        sim.running = false;
-        sim.progress = 1;
-        syncBadges();
-        draw();
-      }
     }
 
     function reset() {
       createSim();
       applyPhase(0);
+      sim.running = false;
+      sim.finished = false;
+      sim.progress = 0;
+      syncBadges();
+      updateMobileCTA();
+      draw();
     }
 
     function run() {
       if (!sim) createSim();
       sim.running = true;
+      sim.finished = false;
       sim.phase = 0;
       applyPhase(0);
       sim.lastTs = performance.now();
+      updateMobileCTA();
       requestAnimationFrame(tick);
     }
 
     function tick(ts) {
       if (!sim || !sim.running) return;
+
       const dt = Math.min(40, ts - sim.lastTs);
       sim.lastTs = ts;
       const speedMul = Number(els.speed.value) / 10;
@@ -1020,7 +1161,11 @@
 
       for (const p of sim.packets) p.t += p.speed * dt;
       sim.packets = sim.packets.filter(p => p.t < 1);
-      for (const pulse of sim.pulses) { pulse.r += 0.16 * dt * speedMul; pulse.a -= 0.0008 * dt * speedMul; }
+
+      for (const pulse of sim.pulses) {
+        pulse.r += 0.16 * dt * speedMul;
+        pulse.a -= 0.0008 * dt * speedMul;
+      }
       sim.pulses = sim.pulses.filter(p => p.a > 0);
 
       if (sim.phaseTimer > sim.phaseDurations[sim.phase]) {
@@ -1029,11 +1174,17 @@
         } else {
           sim.running = false;
           sim.finished = true;
+          sim.progress = 1;
           syncBadges();
+          updateMobileCTA();
         }
       }
+
       draw();
-      if (sim.running) requestAnimationFrame(tick);
+
+      if (sim.running) {
+        requestAnimationFrame(tick);
+      }
     }
 
     function colorForNode(n) {
@@ -1047,23 +1198,29 @@
 
     function drawGridAndLabels() {
       ctx.save();
+
       for (const local of sim.locals) {
         let border = 'rgba(45, 211, 111, 0.8)';
         if (local.majority === 'red') border = 'rgba(255, 99, 125, 0.82)';
         if (local.majority === 'split') border = 'rgba(255, 176, 32, 0.82)';
+
         ctx.strokeStyle = border;
         ctx.lineWidth = 1.6;
         ctx.strokeRect(local.x, local.y, local.w, local.h);
 
         ctx.fillStyle = 'rgba(4,14,24,.70)';
         ctx.fillRect(local.x, local.y, local.w, 22);
+
         ctx.fillStyle = '#d7e4f8';
-        ctx.font = 'bold 11px Arial';
+        ctx.font = isMobile() ? 'bold 10px Arial' : 'bold 11px Arial';
+        ctx.textAlign = 'left';
         ctx.fillText(`로컬 ${local.id + 1}`, local.x + 6, local.y + 15);
 
-        ctx.textAlign = 'right';
-        ctx.fillStyle = local.majority === 'green' ? C.green : local.majority === 'red' ? C.red : C.yellow;
-        ctx.fillText(local.statusText, local.x + local.w - 6, local.y + 15);
+        if (!isMobile()) {
+          ctx.textAlign = 'right';
+          ctx.fillStyle = local.majority === 'green' ? C.green : local.majority === 'red' ? C.red : C.yellow;
+          ctx.fillText(local.statusText, local.x + local.w - 6, local.y + 15);
+        }
 
         const barW = local.w - 12;
         const ratio = local.greenCount / Math.max(1, local.greenCount + local.redCount);
@@ -1073,6 +1230,7 @@
         ctx.fillStyle = ratio >= .5 ? C.green : C.red;
         ctx.fillRect(local.x + 6, local.y + local.h - 16, barW * ratio, 8);
       }
+
       ctx.restore();
     }
 
@@ -1089,12 +1247,19 @@
             if (i === j) continue;
             const b = arr[j];
             const dd = dist(a, b);
-            if (dd < d1) { d2 = d1; nearest2 = nearest; d1 = dd; nearest = b; }
-            else if (dd < d2) { d2 = dd; nearest2 = b; }
+            if (dd < d1) {
+              d2 = d1; nearest2 = nearest;
+              d1 = dd; nearest = b;
+            } else if (dd < d2) {
+              d2 = dd; nearest2 = b;
+            }
           }
           for (const b of [nearest, nearest2]) {
             if (!b) continue;
-            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
           }
         }
       }
@@ -1107,7 +1272,10 @@
       ctx.strokeStyle = 'rgba(53,216,246,.30)';
       ctx.lineWidth = 1.6;
       for (const [a, b] of sim.repEdges) {
-        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
       }
       ctx.setLineDash([]);
       ctx.restore();
@@ -1117,7 +1285,7 @@
       ctx.save();
       for (const n of sim.nodes) {
         const color = colorForNode(n);
-        const r = n.rep || n.proposer ? 7.2 : 5.6;
+        const r = isMobile() ? (n.rep || n.proposer ? 6.2 : 4.8) : (n.rep || n.proposer ? 7.2 : 5.6);
         ctx.beginPath();
         ctx.fillStyle = color;
         ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
@@ -1142,15 +1310,25 @@
         const x = p.a.x + (p.b.x - p.a.x) * p.t;
         const y = p.a.y + (p.b.y - p.a.y) * p.t;
         const color = p.type === 'global' ? C.cyan : C.yellow;
-        const dx = p.b.x - p.a.x, dy = p.b.y - p.a.y;
+        const dx = p.b.x - p.a.x;
+        const dy = p.b.y - p.a.y;
         const len = Math.hypot(dx, dy) || 1;
-        const tx = dx / len, ty = dy / len;
+        const tx = dx / len;
+        const ty = dy / len;
+
         ctx.strokeStyle = color;
         ctx.lineWidth = p.type === 'global' ? 2.8 : 2.1;
         ctx.globalAlpha = 0.30;
-        ctx.beginPath(); ctx.moveTo(x - tx * 18, y - ty * 18); ctx.lineTo(x, y); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(x - tx * 18, y - ty * 18);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+
         ctx.globalAlpha = 1;
-        ctx.beginPath(); ctx.fillStyle = color; ctx.arc(x, y, p.type === 'global' ? 6.2 : 5.0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath();
+        ctx.fillStyle = color;
+        ctx.arc(x, y, p.type === 'global' ? 6.2 : 5.0, 0, Math.PI * 2);
+        ctx.fill();
       }
       ctx.restore();
     }
@@ -1161,7 +1339,11 @@
         const cx = pulse.local.x + pulse.local.w / 2;
         const cy = pulse.local.y + pulse.local.h / 2;
         ctx.globalAlpha = pulse.a;
-        ctx.strokeStyle = pulse.kind === 'coop' ? C.cyan : pulse.kind === 'proposal' ? C.purple : C.yellow;
+        ctx.strokeStyle = pulse.kind === 'coop'
+          ? C.cyan
+          : pulse.kind === 'proposal'
+            ? C.purple
+            : C.yellow;
         ctx.lineWidth = pulse.kind === 'coop' ? 3 : 2;
         ctx.beginPath();
         ctx.arc(cx, cy, pulse.r, 0, Math.PI * 2);
@@ -1173,14 +1355,21 @@
 
     function drawCenterAggregator() {
       if (mode !== 'CB' || sim.phase < 3) return;
-      const x = canvas.width * 0.5, y = canvas.height * 0.52;
+
+      const x = canvas.width * 0.5;
+      const y = canvas.height * 0.52;
+
       ctx.save();
       ctx.fillStyle = 'rgba(10,24,40,.95)';
       ctx.strokeStyle = 'rgba(53,216,246,.6)';
       ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(x, y, 22, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(x, y, 22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
       ctx.fillStyle = C.cyan;
-      ctx.font = 'bold 12px Arial';
+      ctx.font = isMobile() ? 'bold 10px Arial' : 'bold 12px Arial';
       ctx.textAlign = 'center';
       ctx.fillText('GLOBAL', x, y - 2);
       ctx.fillText('VOTE', x, y + 12);
@@ -1188,36 +1377,30 @@
       ctx.restore();
     }
 
-    function drawBottomBanner() {
-      const y = canvas.height - 54;
-      ctx.save();
-      ctx.fillStyle = 'rgba(6,16,28,.84)';
-      ctx.fillRect(18, y, canvas.width - 36, 40);
-      ctx.strokeStyle = 'rgba(28,53,87,.95)';
-      ctx.strokeRect(18, y, canvas.width - 36, 40);
-      ctx.fillStyle = '#f2f7ff';
-      ctx.font = 'bold 14px Arial';
-      const text = mode === 'CB'
-        ? 'CB-EC: 로컬 majority → representative opinion → cooperative / semi-global aggregation → global consensus'
-        : 'GB-RC: proposal / commit을 relay 기반 gossip-broadcasting으로 전역 확산';
-      ctx.fillText(text, 30, y + 25);
-      ctx.restore();
-    }
-
     function draw() {
       if (!sim) return;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      g.addColorStop(0, '#081425'); g.addColorStop(.45, '#081a2d'); g.addColorStop(1, '#07111f');
-      ctx.fillStyle = g; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      g.addColorStop(0, '#081425');
+      g.addColorStop(.45, '#081a2d');
+      g.addColorStop(1, '#07111f');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
       drawGridAndLabels();
-      drawLocalEdges();
-      drawRepEdges();
+
+      // 모바일에서는 무거운 edge 렌더링을 생략
+      if (!isMobile()) {
+        drawLocalEdges();
+        drawRepEdges();
+      }
+
       drawPulses();
       drawCenterAggregator();
       drawPackets();
       drawNodes();
-      //drawBottomBanner();
     }
 
     function setMode(newMode) {
@@ -1227,18 +1410,12 @@
       reset();
     }
 
-    els.modeCB.onclick = () => setMode('CB');
-    els.modeGB.onclick = () => setMode('GB');
-    els.runBtn.onclick = run;
-    els.resetBtn.onclick = reset;
-    [els.grid, els.nodes, els.fault, els.speed].forEach(el => el.addEventListener('input', () => { updateLabels(); reset(); }));
-
     function resizeCanvasResponsive() {
       const w = window.innerWidth;
 
       if (w <= 740) {
         canvas.width = 720;
-        canvas.height = 520;
+        canvas.height = 560;
       } else if (w <= 1220) {
         canvas.width = 980;
         canvas.height = 620;
@@ -1247,21 +1424,52 @@
         canvas.height = 760;
       }
 
-      if (sim) draw();
+      updateCollapsibleUI();
+
+      if (sim) {
+        createSim();
+        applyPhase(sim.phase || 0);
+      }
+    }
+
+    els.modeCB.onclick = () => setMode('CB');
+    els.modeGB.onclick = () => setMode('GB');
+    els.runBtn.onclick = run;
+    els.resetBtn.onclick = reset;
+
+    if (els.mobileRunBtn) {
+      els.mobileRunBtn.onclick = () => {
+        if (!sim || !sim.running) run();
+      };
+    }
+
+    [els.grid, els.nodes, els.fault, els.speed].forEach(el => {
+      el.addEventListener('input', () => {
+        updateLabels();
+        reset();
+      });
+    });
+
+    if (els.legendToggle) {
+      els.legendToggle.onclick = () => {
+        legendExpanded = !legendExpanded;
+        updateCollapsibleUI();
+      };
+    }
+
+    if (els.statsToggle) {
+      els.statsToggle.onclick = () => {
+        statsExpanded = !statsExpanded;
+        updateCollapsibleUI();
+      };
     }
 
     window.addEventListener('resize', resizeCanvasResponsive);
+
     resizeCanvasResponsive();
     updateLabels();
+    updateCollapsibleUI();
     reset();
-
-    const mobileRunBtn = document.getElementById('mobileRunBtn');
-
-    if (mobileRunBtn) {
-      mobileRunBtn.onclick = () => {
-        els.runBtn.click();
-      };
-    }
   </script>
 </body>
 

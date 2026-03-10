@@ -573,6 +573,28 @@
     .mobile-cta {
       display: none;
     }
+
+    .badge-pair {
+      width: 100%;
+      min-width: 0;
+    }
+
+    #phaseBadge {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #progressBadge {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    #modeBadge {
+      white-space: nowrap;
+    }
   </style>
 </head>
 
@@ -987,11 +1009,26 @@
       return sim.globalMajority === 'green' ? '정상' : sim.globalMajority === 'red' ? '비정상' : '미결정';
     }
 
+    function getShortPhaseName(name) {
+      const map = {
+        'Proposal': '제안',
+        'Local Validation': '로컬 검증',
+        'Local Commit': '로컬 커밋',
+        'Semi-global Validation': '준전역 검증',
+        'Commit': '커밋',
+        'Global Validation': '전역 검증',
+        'Global Consensus': '전역 합의'
+      };
+      return map[name] || name;
+    }
+
     function syncBadges() {
       if (!sim) return;
       const done = sim.finished || (sim.phase >= sim.phaseNames.length - 1 && !sim.running);
+      const phaseName = sim.phaseNames[sim.phase] || '완료';
+
       els.modeBadge.textContent = `모드: ${mode === 'CB' ? 'CB-EC' : 'GB-RC'}`;
-      els.phaseBadge.textContent = `단계: ${sim.phaseNames[sim.phase] || '완료'}`;
+      els.phaseBadge.textContent = `단계: ${isMobile() ? getShortPhaseName(phaseName) : phaseName}`;
       els.progressBadge.textContent = `진행률 ${Math.round(sim.progress * 100)}%`;
       els.globalBadge.textContent = done ? `전체 합의: ${getGlobalLabel()}` : '전체 합의: 계산 중';
     }

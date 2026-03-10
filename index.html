@@ -505,12 +505,11 @@
 
         <div class="btns">
           <button id="runBtn" class="primary">데모 실행</button>
-          <button id="stepBtn">다음 단계</button>
           <button id="resetBtn">초기화</button>
         </div>
 
-        <h3>Phase</h3>
-        <div class="phase-list" id="phaseList"></div>
+        <!-- <h3>Phase</h3>
+        <div class="phase-list" id="phaseList"></div> -->
 
         <div class="legend">
           <div class="legend-item"><span class="dot" style="background:var(--blue)"></span>일반 노드</div>
@@ -820,7 +819,7 @@
       els.latencyView.textContent = `${Math.round(latency)} 슬롯`;
       els.latencyBadge.textContent = `예상 지연: ${Math.round(latency)} 슬롯`;
       syncBadges();
-      renderPhaseList();
+      //renderPhaseList();
       draw();
     }
 
@@ -1198,7 +1197,7 @@
       drawCenterAggregator();
       drawPackets();
       drawNodes();
-      drawBottomBanner();
+      //drawBottomBanner();
     }
 
     function setMode(newMode) {
@@ -1211,7 +1210,6 @@
     els.modeCB.onclick = () => setMode('CB');
     els.modeGB.onclick = () => setMode('GB');
     els.runBtn.onclick = run;
-    els.stepBtn.onclick = nextPhase;
     els.resetBtn.onclick = reset;
     [els.grid, els.nodes, els.fault, els.speed].forEach(el => el.addEventListener('input', () => { updateLabels(); reset(); }));
 

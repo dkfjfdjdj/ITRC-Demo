@@ -340,6 +340,14 @@
         grid-template-columns: 1fr;
       }
 
+      .left {
+        order: 2;
+      }
+
+      .right {
+        order: 1;
+      }
+
       canvas {
         height: 620px;
       }
@@ -350,8 +358,117 @@
     }
 
     @media (max-width: 740px) {
+      .wrap {
+        padding: 12px;
+      }
+
+      h1 {
+        font-size: 22px;
+        line-height: 1.25;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        font-size: 14px;
+        line-height: 1.45;
+        margin-bottom: 10px;
+      }
+
+      .layout {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .right {
+        order: 1;
+        padding: 10px;
+      }
+
+      .left {
+        order: 2;
+        padding: 14px;
+      }
+
+      .right-head {
+        margin-bottom: 8px;
+      }
+
+      .topbar {
+        gap: 6px;
+      }
+
+      .badge {
+        font-size: 12px;
+        padding: 7px 10px;
+      }
+
+      .corner-box {
+        min-width: 0;
+        width: 100%;
+        padding: 10px 12px;
+      }
+
+      .seg {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .btns {
+        grid-template-columns: 1fr;
+      }
+
+      button {
+        min-height: 48px;
+        font-size: 15px;
+        border-radius: 14px;
+      }
+
+      label {
+        font-size: 15px;
+        line-height: 1.4;
+      }
+
+      input[type="range"] {
+        height: 32px;
+      }
+
+      canvas {
+        height: 48vh;
+        min-height: 300px;
+        max-height: 420px;
+      }
+
       .stats {
         grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+      }
+
+      .card {
+        padding: 10px;
+      }
+
+      .card .v {
+        font-size: 18px;
+      }
+
+      .card:nth-child(n+5) {
+        display: none;
+      }
+
+      .phase-list {
+        gap: 6px;
+      }
+
+      .phase-item {
+        padding: 9px 10px;
+      }
+
+      .phase-item .t {
+        font-size: 12px;
+      }
+
+      .mini-grid {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -1098,6 +1215,25 @@
     els.resetBtn.onclick = reset;
     [els.grid, els.nodes, els.fault, els.speed].forEach(el => el.addEventListener('input', () => { updateLabels(); reset(); }));
 
+    function resizeCanvasResponsive() {
+      const w = window.innerWidth;
+
+      if (w <= 740) {
+        canvas.width = 720;
+        canvas.height = 520;
+      } else if (w <= 1220) {
+        canvas.width = 980;
+        canvas.height = 620;
+      } else {
+        canvas.width = 1120;
+        canvas.height = 760;
+      }
+
+      if (sim) draw();
+    }
+
+    window.addEventListener('resize', resizeCanvasResponsive);
+    resizeCanvasResponsive();
     updateLabels();
     reset();
   </script>

@@ -82,40 +82,44 @@
       margin-bottom: 10px;
     }
 
+
     .topbar {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: 8px;
       margin-bottom: 0;
       flex: 1;
+      align-items: center;
+      min-width: 0;
     }
 
     .badge-pair {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        flex-wrap: nowrap;
-        min-width: 0;
-      }
-      
-      #phaseBadge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 92px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: nowrap;
+      min-width: 0;
+      flex: 0 0 auto;
+    }
 
-      #progressBadge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 52px;
-        white-space: nowrap;
-        font-variant-numeric: tabular-nums;
-      }
+    #phaseBadge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 92px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #progressBadge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
 
     .corner-box {
       min-width: 270px;
@@ -469,7 +473,10 @@
       }
 
       .topbar {
+        flex-wrap: nowrap;
         gap: 6px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
       }
 
       .badge {
@@ -589,27 +596,22 @@
     }
 
     .badge-pair {
-      width: 100%;
-      min-width: 0;
-    }
-
-    #phaseBadge {
-      width: 92px;
-      flex: 0 0 92px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    #progressBadge {
-      width: 52px;
-      flex: 0 0 52px;
-      white-space: nowrap;
-      font-variant-numeric: tabular-nums;
+      flex: 0 0 auto;
     }
 
     #modeBadge {
-      white-space: nowrap;
+      width: 88px;
+      flex: 0 0 88px;
+    }
+
+    #phaseBadge {
+      width: 108px;
+      flex: 0 0 108px;
+    }
+
+    #progressBadge {
+      width: 84px;
+      flex: 0 0 84px;
     }
   </style>
 </head>
@@ -658,23 +660,24 @@
           <div class="legend-item"><span class="dot" style="background:var(--yellow)"></span>로컬 계산 / commit</div>
           <div class="legend-item"><span class="dot" style="background:var(--green)"></span>합의 완료</div>
           <div class="legend-item"><span class="dot" style="background:var(--purple)"></span>대표 노드 / proposer</div>
-          <div class="legend-item"><span class="dot" style="background:var(--cyan)"></span>전역 전송 / cooperative pulse</div>
+          <div class="legend-item"><span class="dot" style="background:var(--cyan)"></span>전역 전송 / cooperative pulse
+          </div>
         </div>
       </div>
 
       <div class="panel right">
         <div class="right-head">
           <div class="topbar">
-          <div class="badge" id="modeBadge">모드: CB-EC</div>
-        
-          <div class="badge-pair">
-            <div class="badge" id="phaseBadge">대기 중</div>
-            <div class="badge" id="progressBadge">진행률 0%</div>
+            <div class="badge" id="modeBadge">모드: CB-EC</div>
+
+            <div class="badge-pair">
+              <div class="badge" id="phaseBadge">대기 중</div>
+              <div class="badge" id="progressBadge">진행률 0%</div>
+            </div>
+
+            <div class="badge" id="globalBadge">전체 합의: -</div>
+            <div class="badge" id="latencyBadge">예상 지연: -</div>
           </div>
-        
-          <div class="badge" id="globalBadge">전체 합의: -</div>
-          <div class="badge" id="latencyBadge">예상 지연: -</div>
-        </div>
         </div>
 
         <canvas id="stage" width="1120" height="760"></canvas>

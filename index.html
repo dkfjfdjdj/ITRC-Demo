@@ -471,6 +471,40 @@
         grid-template-columns: 1fr;
       }
     }
+
+    .mobile-cta {
+      display: none;
+    }
+
+    @media (max-width: 740px) {
+
+      .wrap {
+        padding-bottom: 110px;
+      }
+
+      .desktop-btns #runBtn {
+        display: none;
+      }
+
+      .mobile-cta {
+        display: block;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+        background: linear-gradient(180deg, rgba(7,17,31,0), rgba(7,17,31,.92) 30%, rgba(7,17,31,.98) 100%);
+        z-index: 9999;
+      }
+
+      .mobile-cta button {
+        width: 100%;
+        min-height: 56px;
+        border-radius: 16px;
+        font-size: 17px;
+        font-weight: 800;
+      }
+    }
   </style>
 </head>
 
@@ -503,13 +537,10 @@
           <input id="speed" type="range" min="5" max="20" step="1" value="5">
         </div>
 
-        <div class="btns">
+        <div class="btns desktop-btns">
           <button id="runBtn" class="primary">데모 실행</button>
           <button id="resetBtn">초기화</button>
         </div>
-
-        <!-- <h3>Phase</h3>
-        <div class="phase-list" id="phaseList"></div> -->
 
         <div class="legend">
           <div class="legend-item"><span class="dot" style="background:var(--blue)"></span>일반 노드</div>
@@ -572,6 +603,10 @@
     </div>
   </div>
 
+  <div class="mobile-cta">
+    <button id="mobileRunBtn" class="primary">데모 실행</button>
+  </div>
+
   <script>
     const canvas = document.getElementById('stage');
     const ctx = canvas.getContext('2d');
@@ -580,7 +615,6 @@
       grid: document.getElementById('grid'), nodes: document.getElementById('nodes'), fault: document.getElementById('fault'), speed: document.getElementById('speed'),
       gridVal: document.getElementById('gridVal'), nodesVal: document.getElementById('nodesVal'), faultVal: document.getElementById('faultVal'), speedVal: document.getElementById('speedVal'),
       runBtn: document.getElementById('runBtn'), stepBtn: document.getElementById('stepBtn'), resetBtn: document.getElementById('resetBtn'),
-      phaseList: document.getElementById('phaseList'),
       modeBadge: document.getElementById('modeBadge'), phaseBadge: document.getElementById('phaseBadge'), progressBadge: document.getElementById('progressBadge'), globalBadge: document.getElementById('globalBadge'), latencyBadge: document.getElementById('latencyBadge'),
       totalNodes: document.getElementById('totalNodes'), faultyNodes: document.getElementById('faultyNodes'), localsCount: document.getElementById('localsCount'), validLocals: document.getElementById('validLocals'), faultyLocals: document.getElementById('faultyLocals'), splitLocals: document.getElementById('splitLocals'), messageCount: document.getElementById('messageCount'), latencyView: document.getElementById('latencyView')
     };
@@ -830,21 +864,7 @@
       return sim.globalMajority === 'green' ? '정상' : sim.globalMajority === 'red' ? '비정상' : '미결정';
     }
 
-    function renderPhaseList() {
-      if (!sim || !els.phaseList) return;
-      els.phaseList.innerHTML = '';
-      const lastIdx = sim.phaseNames.length - 1;
-      // const isFinished = !sim.running && sim.phase === lastIdx;
-      const isFinished = !!sim.finished;
-      sim.phaseNames.forEach((name, idx) => {
-        const item = document.createElement('div');
-        const isDone = idx < sim.phase || (isFinished && idx === lastIdx);
-        const isActive = idx === sim.phase && !isDone;
-        item.className = 'phase-item' + (isActive ? ' active' : isDone ? ' done' : '');
-        item.innerHTML = `<div><div class="n">Phase ${idx + 1}</div><div class="t">${name}</div></div><div class="s">${isDone ? '완료' : isActive ? '진행 중' : '대기'}</div>`;
-        els.phaseList.appendChild(item);
-      });
-    }
+    function renderPhaseList() { }
 
     function syncBadges() {
       if (!sim) return;
@@ -1234,6 +1254,14 @@
     resizeCanvasResponsive();
     updateLabels();
     reset();
+
+    const mobileRunBtn = document.getElementById('mobileRunBtn');
+
+    if (mobileRunBtn) {
+      mobileRunBtn.onclick = () => {
+        els.runBtn.click();
+      };
+    }
   </script>
 </body>
 

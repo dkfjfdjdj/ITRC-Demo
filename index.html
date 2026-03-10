@@ -90,6 +90,19 @@
       flex: 1;
     }
 
+    .badge-pair {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: nowrap;
+        min-width: 0;
+      }
+      
+      #phaseBadge,
+      #progressBadge {
+        white-space: nowrap;
+      }
+
     .corner-box {
       min-width: 270px;
       padding: 12px 14px;
@@ -614,12 +627,16 @@
       <div class="panel right">
         <div class="right-head">
           <div class="topbar">
-            <div class="badge" id="modeBadge">모드: CB-EC</div>
+          <div class="badge" id="modeBadge">모드: CB-EC</div>
+        
+          <div class="badge-pair">
             <div class="badge" id="phaseBadge">대기 중</div>
             <div class="badge" id="progressBadge">진행률 0%</div>
-            <div class="badge" id="globalBadge">전체 합의: -</div>
-            <div class="badge" id="latencyBadge">예상 지연: -</div>
           </div>
+        
+          <div class="badge" id="globalBadge">전체 합의: -</div>
+          <div class="badge" id="latencyBadge">예상 지연: -</div>
+        </div>
         </div>
 
         <canvas id="stage" width="1120" height="760"></canvas>

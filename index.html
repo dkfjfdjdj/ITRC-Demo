@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wireless Consensus Demo</title>
+  <style>
+    :root {
+      --bg1: #07111d;
+      --bg2: #0b1830;
+      --panel: #0c1a2d;
+      --line: #1e385a;
+      --text: #eef5ff;
+      --muted: #93a8c5;
+      --blue: #4da3ff;
+      --green: #26d96f;
+      --red: #ff637d;
+      --yellow: #ffb020;
+      --cyan: #35d8f6;
+      --purple: #b88cff;
+      --good: rgba(38, 217, 111, .18);
+      --bad: rgba(255, 99, 125, .16);
+      --warn: rgba(255, 176, 32, .16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: Arial, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      background: radial-gradient(circle at top, #0d2142 0%, #07111d 58%, #050b14 100%);
+    }
+
+    .wrap {
+      max-width: 1540px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 30px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 16px;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(12, 26, 45, .96), rgba(6, 16, 28, .98));
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, .32);
+    }
+
+    .left {
+      padding: 16px;
+    }
+
+    .right {
+      padding: 12px;
+      position: relative;
+    }
+
+    .right-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 0;
+      flex: 1;
+    }
+
+    .corner-box {
+      min-width: 270px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(9, 22, 40, .98);
+      box-shadow: inset 0 0 0 1px rgba(184, 140, 255, .18);
+    }
+
+    .corner-box .k {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .03em;
+      margin-bottom: 4px;
+    }
+
+    .corner-box .v {
+      font-size: 26px;
+      font-weight: 900;
+      line-height: 1.05;
+    }
+
+    .corner-box .sub {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 6px;
+      line-height: 1.45;
+    }
+
+    h2 {
+      font-size: 18px;
+      margin: 0 0 14px;
+    }
+
+    h3 {
+      font-size: 14px;
+      margin: 16px 0 8px;
+      color: #dce8fb;
+    }
+
+    .seg {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #10203a;
+      color: var(--text);
+      padding: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button.active {
+      background: #173b6b;
+      border-color: #3578e5;
+    }
+
+    .btns {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr;
+      gap: 8px;
+      margin: 14px 0;
+    }
+
+    .btns .primary {
+      background: #1c57e3;
+      border-color: #4a84ff;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .value {
+      color: var(--yellow);
+      font-weight: 800;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .message {
+      margin-top: 12px;
+      min-height: 96px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #071322;
+      padding: 12px 14px;
+      line-height: 1.55;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .badge {
+      border: 1px solid var(--line);
+      background: #091526;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    canvas {
+      width: 100%;
+      height: 760px;
+      display: block;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #081425, #081a2d 32%, #07111f);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .card {
+      background: #091628;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .card .k {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .card .v {
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .phase-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .phase-item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #081526;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .phase-item.active {
+      background: rgba(28, 87, 227, .18);
+      border-color: #3971d8;
+    }
+
+    .phase-item.done {
+      background: rgba(38, 217, 111, .12);
+      border-color: rgba(38, 217, 111, .36);
+    }
+
+    .phase-item .n {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .phase-item .t {
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .phase-item .s {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .status-box {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      background: #081526;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .status-box.good {
+      background: var(--good);
+    }
+
+    .status-box.bad {
+      background: var(--bad);
+    }
+
+    .status-box.warn {
+      background: var(--warn);
+    }
+
+    @media (max-width: 1220px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      canvas {
+        height: 620px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    @media (max-width: 740px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Fast and Scalable Distributed Consensus Demo</h1>
+
+    <div class="layout">
+      <div class="panel left">
+        <h2>데모 설정</h2>
+        <div class="seg">
+          <button id="modeCB" class="active">CB-EC</button>
+          <button id="modeGB">GB-RC</button>
+        </div>
+
+        <div class="field">
+          <label>로컬 네트워크 격자 <span class="value" id="gridVal">4 × 4</span></label>
+          <input id="grid" type="range" min="3" max="5" step="1" value="4">
+        </div>
+        <div class="field">
+          <label>로컬당 노드 수 <span class="value" id="nodesVal">15</span></label>
+          <input id="nodes" type="range" min="8" max="20" step="1" value="15">
+        </div>
+        <div class="field">
+          <label>오류 노드 비율 <span class="value" id="faultVal">20%</span></label>
+          <input id="fault" type="range" min="0" max="45" step="1" value="20">
+        </div>
+        <div class="field">
+          <label>재생 속도 <span class="value" id="speedVal">1.0x</span></label>
+          <input id="speed" type="range" min="5" max="20" step="1" value="5">
+        </div>
+
+        <div class="btns">
+          <button id="runBtn" class="primary">데모 실행</button>
+          <button id="stepBtn">다음 단계</button>
+          <button id="resetBtn">초기화</button>
+        </div>
+
+        <h3>Phase</h3>
+        <div class="phase-list" id="phaseList"></div>
+
+        <div class="legend">
+          <div class="legend-item"><span class="dot" style="background:var(--blue)"></span>일반 노드</div>
+          <div class="legend-item"><span class="dot" style="background:var(--red)"></span>오류 노드</div>
+          <div class="legend-item"><span class="dot" style="background:var(--yellow)"></span>로컬 계산 / commit</div>
+          <div class="legend-item"><span class="dot" style="background:var(--green)"></span>합의 완료</div>
+          <div class="legend-item"><span class="dot" style="background:var(--purple)"></span>대표 노드 / proposer</div>
+          <div class="legend-item"><span class="dot" style="background:var(--cyan)"></span>전역 전송 / cooperative pulse
+          </div>
+        </div>
+
+      </div>
+
+      <div class="panel right">
+        <div class="right-head">
+          <div class="topbar">
+            <div class="badge" id="modeBadge">모드: CB-EC</div>
+            <div class="badge" id="phaseBadge">대기 중</div>
+            <div class="badge" id="progressBadge">진행률 0%</div>
+            <div class="badge" id="globalBadge">전체 합의: -</div>
+            <div class="badge" id="latencyBadge">예상 지연: -</div>
+          </div>
+        </div>
+        <canvas id="stage" width="1120" height="760"></canvas>
+        <div class="stats">
+          <div class="card">
+            <div class="k">전체 노드</div>
+            <div class="v" id="totalNodes">0</div>
+          </div>
+          <div class="card">
+            <div class="k">오류 노드</div>
+            <div class="v" id="faultyNodes">0</div>
+          </div>
+          <div class="card">
+            <div class="k">로컬 네트워크</div>
+            <div class="v" id="localsCount">0</div>
+          </div>
+          <div class="card">
+            <div class="k">정상 로컬</div>
+            <div class="v" id="validLocals">0</div>
+          </div>
+          <div class="card">
+            <div class="k">오류 우세 로컬</div>
+            <div class="v" id="faultyLocals">0</div>
+          </div>
+          <div class="card">
+            <div class="k">동률 로컬</div>
+            <div class="v" id="splitLocals">0</div>
+          </div>
+          <div class="card">
+            <div class="k">전송 메시지 수</div>
+            <div class="v" id="messageCount">0</div>
+          </div>
+          <div class="card">
+            <div class="k">예상 지연</div>
+            <div class="v" id="latencyView">0 슬롯</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('stage');
+    const ctx = canvas.getContext('2d');
+    const els = {
+      modeCB: document.getElementById('modeCB'), modeGB: document.getElementById('modeGB'),
+      grid: document.getElementById('grid'), nodes: document.getElementById('nodes'), fault: document.getElementById('fault'), speed: document.getElementById('speed'),
+      gridVal: document.getElementById('gridVal'), nodesVal: document.getElementById('nodesVal'), faultVal: document.getElementById('faultVal'), speedVal: document.getElementById('speedVal'),
+      runBtn: document.getElementById('runBtn'), stepBtn: document.getElementById('stepBtn'), resetBtn: document.getElementById('resetBtn'),
+      phaseList: document.getElementById('phaseList'),
+      modeBadge: document.getElementById('modeBadge'), phaseBadge: document.getElementById('phaseBadge'), progressBadge: document.getElementById('progressBadge'), globalBadge: document.getElementById('globalBadge'), latencyBadge: document.getElementById('latencyBadge'),
+      totalNodes: document.getElementById('totalNodes'), faultyNodes: document.getElementById('faultyNodes'), localsCount: document.getElementById('localsCount'), validLocals: document.getElementById('validLocals'), faultyLocals: document.getElementById('faultyLocals'), splitLocals: document.getElementById('splitLocals'), messageCount: document.getElementById('messageCount'), latencyView: document.getElementById('latencyView')
+    };
+
+    const C = {
+      blue: '#4da3ff', red: '#ff637d', yellow: '#ffb020', green: '#26d96f', cyan: '#35d8f6', purple: '#b88cff',
+      border: 'rgba(56,144,219,.9)', faint: 'rgba(133,166,206,.18)', faint2: 'rgba(133,166,206,.08)',
+      panelText: '#e8f0fb', muted: '#90a8c6', white: '#f7fbff'
+    };
+
+    let mode = 'CB';
+    let sim = null;
+
+    function rand(a, b) { return Math.random() * (b - a) + a; }
+    function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+    function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
+    function fmtPct(v) { return `${(v * 100).toFixed(1)}%`; }
+    function updateLabels() {
+      els.gridVal.textContent = `${els.grid.value} × ${els.grid.value}`;
+      els.nodesVal.textContent = els.nodes.value;
+      els.faultVal.textContent = `${els.fault.value}%`;
+      els.speedVal.textContent = `${(els.speed.value / 5).toFixed(1)}x`;
+    }
+
+    function phaseNamesForMode() {
+      return mode === 'CB'
+        ? ['Proposal', 'Local Validation', 'Local Commit', 'Semi-global Validation', 'Global Consensus']
+        : ['Proposal', 'Local Validation', 'Commit', 'Global Validation', 'Global Consensus'];
+    }
+
+    function makeLocalLabel(local) {
+      if (local.majority === 'green') return `정상 G:${local.greenCount} R:${local.redCount}`;
+      if (local.majority === 'red') return `오류 우세 G:${local.greenCount} R:${local.redCount}`;
+      return `동률 G:${local.greenCount} R:${local.redCount}`;
+    }
+
+    function gfunc(a, b, zeta) {
+      if (a <= 0) return 0;
+      const bb = Math.min(Math.max(b, 1e-12), 1 - 1e-12);
+      return Math.ceil(Math.log(1 - Math.pow(zeta, 1 / a)) / Math.log(bb));
+    }
+
+    function meanKbar(K) {
+      const s = Math.sqrt(K);
+      if (!Number.isInteger(s)) return 0;
+
+      if (s % 2 === 0) {
+        return (5 * s / 6) - (1 / 3) * s + 0.5;
+      }
+
+      return (5 * s / 6) - (11 / 6) + 1.5;
+    }
+
+    function epsilonMaxSingle(D, params) {
+      const { PLdB_R0, rho, Pn, Pt, R, R0, eta } = params;
+      const dist = R * (Math.sqrt(2 * D) - Math.sqrt(2));
+      const a = Math.pow(10, PLdB_R0 / 10) * rho * (Pn / Pt) * Math.pow(dist / R0, eta);
+      return 1 - Math.exp(-a);
+    }
+
+    function epsilonBarMax(D, N, params) {
+      const { PLdB_R0, rho, Pn, Pt, R, R0, eta } = params;
+      const dist = Math.sqrt(2) * R * (2 * Math.sqrt(N) - Math.sqrt(D) - 1) / 2;
+      const a = Math.pow(10, PLdB_R0 / 10) * rho * (Pn / Pt) * Math.pow(dist / R0, eta);
+
+      let sum = 0;
+      let fact = 1;
+      for (let n = 0; n < D; n++) {
+        if (n > 0) fact *= n;
+        sum += Math.exp(-a) * Math.pow(a, n) / fact;
+      }
+      return 1 - sum;
+    }
+
+    function tauSlot(params) {
+      const { M, B, rho } = params;
+      return M / (B * Math.log(1 + rho));
+    }
+
+    function latencyGBRC(g, D, params) {
+      const K = g * g;
+      const N = K * D;
+      const T = K;
+      const eps = epsilonMaxSingle(D, params);
+      const kbar = meanKbar(K);
+      const term = gfunc(9 * D / 4 - 1, eps, params.zeta);
+      return T * N * (4 * kbar - 2) * term * tauSlot(params);
+    }
+
+    function latencyCBEC(g, D, params) {
+      const K = g * g;
+      const N = K * D;
+      const T = K;
+      const eps = epsilonMaxSingle(D, params);
+      const epsBar = epsilonBarMax(D, N, params);
+
+      const localTerm = (D + 1) * gfunc(D - 1, eps, params.zeta);
+      const globalTerm = 2 * D * (K + 1) * gfunc(N - D, epsBar, params.zeta);
+      return T * (localTerm + globalTerm) * tauSlot(params);
+    }
+    function createSim() {
+      const g = Number(els.grid.value);
+      const npl = Number(els.nodes.value);
+      const faultRate = Number(els.fault.value) / 100;
+      const margin = 40;
+      const top = 64;
+      const usableW = canvas.width - margin * 2;
+      const usableH = canvas.height - 160;
+      const cellW = usableW / g;
+      const cellH = usableH / g;
+      const locals = [];
+      const nodes = [];
+      const packets = [];
+      const pulses = [];
+      let nodeId = 0;
+      const totalNodesPlanned = g * g * npl;
+      const faultTarget = Math.round(totalNodesPlanned * faultRate);
+
+      for (let r = 0; r < g; r++) {
+        for (let c = 0; c < g; c++) {
+          const local = {
+            id: r * g + c, r, c,
+            x: margin + c * cellW, y: top + r * cellH, w: cellW, h: cellH,
+            nodes: [], representative: null, proposer: null,
+            phaseState: 'idle', majority: 'split', greenCount: 0, redCount: 0,
+            statusText: '대기', localCommitProgress: 0, semiglobalReady: false, globalReceived: false,
+            voteWeight: npl
+          };
+
+          const cx = local.x + local.w / 2;
+          const cy = local.y + local.h / 2;
+          const radius = Math.min(local.w, local.h) * 0.33;
+          for (let i = 0; i < npl; i++) {
+            const ang = (Math.PI * 2 * i / npl) + rand(-0.22, 0.22);
+            const rr = radius * Math.sqrt((i + 1) / npl) * rand(0.45, 1.0);
+            const node = {
+              id: nodeId++, localId: local.id,
+              x: clamp(cx + Math.cos(ang) * rr + rand(-12, 12), local.x + 16, local.x + local.w - 16),
+              y: clamp(cy + Math.sin(ang) * rr + rand(-12, 12), local.y + 26, local.y + local.h - 16),
+              faulty: false, display: 'base', rep: false, proposer: false, pulse: Math.random() * Math.PI * 2
+            };
+            local.nodes.push(node);
+            nodes.push(node);
+          }
+          locals.push(local);
+        }
+      }
+
+      const shuffled = [...nodes];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      for (let i = 0; i < faultTarget; i++) shuffled[i].faulty = true;
+
+      for (const local of locals) {
+        local.greenCount = local.nodes.filter(n => !n.faulty).length;
+        local.redCount = local.nodes.filter(n => n.faulty).length;
+        local.majority = local.greenCount > local.redCount ? 'green' : (local.redCount > local.greenCount ? 'red' : 'split');
+        local.statusText = makeLocalLabel(local);
+        if (local.majority === 'green') {
+          local.representative = local.nodes.find(n => !n.faulty) || local.nodes[0];
+        } else if (local.majority === 'red') {
+          local.representative = local.nodes.find(n => n.faulty) || local.nodes[0];
+        } else {
+          local.representative = local.nodes[Math.floor(Math.random() * local.nodes.length)];
+        }
+        local.representative.rep = true;
+      }
+
+      const proposerLocal = locals[0];
+      proposerLocal.proposer = proposerLocal.nodes.find(n => !n.faulty) || proposerLocal.nodes[0];
+      proposerLocal.proposer.proposer = true;
+      proposerLocal.proposer.rep = true;
+      proposerLocal.representative = proposerLocal.proposer;
+
+      const repEdges = [];
+      for (let i = 0; i < locals.length; i++) {
+        for (let j = i + 1; j < locals.length; j++) {
+          const a = locals[i], b = locals[j];
+          const manhattan = Math.abs(a.r - b.r) + Math.abs(a.c - b.c);
+          if (manhattan === 1 || (manhattan === 2 && Math.random() < 0.16)) {
+            repEdges.push([a.representative, b.representative]);
+          }
+        }
+      }
+
+      const validCount = locals.filter(l => l.majority === 'green').length;
+      const faultyCount = locals.filter(l => l.majority === 'red').length;
+      const splitCount = locals.length - validCount - faultyCount;
+      let globalMajority = 'split';
+      if (validCount > faultyCount) globalMajority = 'green';
+      else if (faultyCount > validCount) globalMajority = 'red';
+
+      const phases = phaseNamesForMode();
+      const phaseDurations = mode === 'CB' ? [1300, 2200, 2200, 2400, 2200] : [1400, 2200, 2600, 2800, 2200];
+      const messagesEstimate = mode === 'CB'
+        ? (1 + g * g * npl + g * g) * 2
+        : Math.round(nodes.length * 2.7 + repEdges.length * 3);
+      
+
+      const params = {
+        Pt: 100,
+        Pn: 1e-10,
+        R: 10,
+        R0: 1,
+        eta: 3,
+        rho: 10,
+        zeta: 0.999,
+        M: 1,
+        B: 1,
+        PLdB_R0: 20 * Math.log10(0.125 / (4 * Math.PI * 1))
+      };
+
+      const latency = mode === 'CB'
+        ? latencyCBEC(g, npl, params)
+        : latencyGBRC(g, npl, params);
+
+      sim = {
+        g, npl, faultRate, locals, nodes, packets, pulses, repEdges,
+        phase: 0, progress: 0, running: false, lastTs: 0, phaseTimer: 0,
+        globalMajority, validCount, faultyCount, splitCount,
+        phaseNames: phases, phaseDurations, messageEstimate: messagesEstimate, latency,
+        faultyNodes: faultTarget
+      };
+
+      els.totalNodes.textContent = nodes.length;
+      els.faultyNodes.textContent = faultTarget;
+      els.localsCount.textContent = locals.length;
+      els.validLocals.textContent = validCount;
+      els.faultyLocals.textContent = faultyCount;
+      els.splitLocals.textContent = splitCount;
+      els.messageCount.textContent = messagesEstimate;
+
+      
+      els.latencyView.textContent = `${Math.round(latency)} 슬롯`;
+      els.latencyBadge.textContent = `예상 지연: ${Math.round(latency)} 슬롯`;
+      syncBadges();
+      renderPhaseList();
+      draw();
+    }
+
+    function setMessage(html) { }
+
+    function getGlobalLabel() {
+      if (!sim) return '-';
+      return sim.globalMajority === 'green' ? '정상' : sim.globalMajority === 'red' ? '비정상' : '미결정';
+    }
+
+    function renderPhaseList() {
+      if (!sim || !els.phaseList) return;
+      els.phaseList.innerHTML = '';
+      const lastIdx = sim.phaseNames.length - 1;
+      // const isFinished = !sim.running && sim.phase === lastIdx;
+      const isFinished = !!sim.finished;
+      sim.phaseNames.forEach((name, idx) => {
+        const item = document.createElement('div');
+        const isDone = idx < sim.phase || (isFinished && idx === lastIdx);
+        const isActive = idx === sim.phase && !isDone;
+        item.className = 'phase-item' + (isActive ? ' active' : isDone ? ' done' : '');
+        item.innerHTML = `<div><div class="n">Phase ${idx + 1}</div><div class="t">${name}</div></div><div class="s">${isDone ? '완료' : isActive ? '진행 중' : '대기'}</div>`;
+        els.phaseList.appendChild(item);
+      });
+    }
+
+    function syncBadges() {
+      if (!sim) return;
+      const done = sim.phase >= sim.phaseNames.length - 1 && !sim.running;
+      els.modeBadge.textContent = `모드: ${mode === 'CB' ? 'CB-EC' : 'GB-RC'}`;
+      els.phaseBadge.textContent = `단계: ${sim.phaseNames[sim.phase] || '완료'}`;
+      els.progressBadge.textContent = `진행률 ${Math.round(sim.progress * 100)}%`;
+      els.globalBadge.textContent = done ? `전체 합의: ${getGlobalLabel()}` : '전체 합의: 계산 중';
+      renderPhaseList();
+    }
+
+    function makePacket(a, b, type) {
+      const speedMul = Number(els.speed.value) / 10;
+      const base = type === 'global' ? rand(0.0016, 0.0028) : type === 'relay' ? rand(0.0021, 0.0035) : rand(0.0030, 0.0050);
+      return { a, b, type, t: 0, speed: base * speedMul };
+    }
+
+    function addPulse(local, kind = 'coop') {
+      sim.pulses.push({ local, r: 10, a: 0.75, kind });
+    }
+
+    function applyPhase(phase) {
+      sim.phase = phase;
+      sim.finished = false;
+      sim.progress = phase / (sim.phaseNames.length - 1);
+      sim.phaseTimer = 0;
+      sim.packets.length = 0;
+      sim.pulses.length = 0;
+      for (const local of sim.locals) {
+        local.phaseState = 'idle';
+        local.localCommitProgress = 0;
+        local.semiglobalReady = false;
+        local.globalReceived = false;
+      }
+      for (const node of sim.nodes) node.display = node.faulty ? 'faulty' : 'base';
+      sim.locals[0].proposer.display = 'rep';
+
+      if (mode === 'CB') {
+        if (phase === 0) {
+          addPulse(sim.locals[0], 'proposal');
+          setMessage('<strong>Phase 1: Proposal</strong>');
+        } else if (phase === 1) {
+          for (const local of sim.locals) {
+            local.phaseState = 'counting';
+            for (const n of local.nodes) n.display = n.faulty ? 'faulty' : 'counting';
+          }
+          setMessage('<strong>Phase 2: Local Validation</strong>');
+        } else if (phase === 2) {
+          for (const local of sim.locals) {
+            local.phaseState = 'commit';
+            local.localCommitProgress = 1;
+            for (const n of local.nodes) n.display = n.faulty ? 'faulty' : 'counting';
+            local.representative.display = 'rep';
+            for (const n of local.nodes) {
+              if (n !== local.representative && !n.faulty && local.majority === 'green') n.display = 'agreed';
+            }
+            addPulse(local, 'local');
+          }
+          setMessage('<strong>Phase 3: Local Commit</strong>');
+        } else if (phase === 3) {
+          for (const local of sim.locals) {
+            local.phaseState = local.majority;
+            local.semiglobalReady = true;
+            local.representative.display = 'rep';
+            addPulse(local, 'coop');
+            const center = { x: canvas.width * 0.5, y: canvas.height * 0.52 };
+            sim.packets.push(makePacket(local.representative, center, 'global'));
+          }
+          setMessage('<strong>Phase 4: Semi-global Validation</strong>');
+        } else if (phase === 4) {
+          for (const local of sim.locals) {
+            local.phaseState = local.majority;
+            local.globalReceived = true;
+            for (const n of local.nodes) {
+              if (n.faulty) n.display = 'faulty';
+              else n.display = sim.globalMajority === 'green' ? 'agreed' : 'counting';
+            }
+            local.representative.display = 'rep';
+          }
+          setMessage(`<strong>Phase 5: Global Consensus</strong><br><strong>${getGlobalLabel()}</strong>`);
+        }
+      } else {
+        if (phase === 0) {
+          const p = sim.locals[0].proposer;
+          for (const [a, b] of sim.repEdges) if (a === p || b === p) sim.packets.push(makePacket(a, b, 'relay'));
+          setMessage('<strong>Phase 1: Proposal</strong>');
+        } else if (phase === 1) {
+          for (const local of sim.locals) {
+            local.phaseState = 'counting';
+            for (const n of local.nodes) n.display = n.faulty ? 'faulty' : 'counting';
+          }
+          setMessage('<strong>Phase 2: Local Validation</strong>');
+        } else if (phase === 2) {
+          for (const [a, b] of sim.repEdges) sim.packets.push(makePacket(a, b, 'relay'));
+          for (const local of sim.locals) local.representative.display = 'rep';
+          setMessage('<strong>Phase 3: Commit</strong>');
+        } else if (phase === 3) {
+          for (const [a, b] of sim.repEdges) sim.packets.push(makePacket(a, b, 'global'));
+          for (const local of sim.locals) {
+            local.phaseState = local.majority;
+            local.semiglobalReady = true;
+          }
+          setMessage('<strong>Phase 4: Global Validation</strong>');
+        } else if (phase === 4) {
+          for (const local of sim.locals) {
+            local.globalReceived = true;
+            for (const n of local.nodes) n.display = n.faulty ? 'faulty' : (sim.globalMajority === 'green' ? 'agreed' : 'counting');
+            local.representative.display = 'rep';
+          }
+          setMessage(`<strong>Phase 5: Global Consensus</strong><br><strong>${getGlobalLabel()}</strong>`);
+        }
+      }
+      syncBadges();
+      draw();
+    }
+
+    function nextPhase() {
+      if (!sim) createSim();
+
+      const last = sim.phaseNames.length - 1;
+
+      if (sim.phase < last) {
+        applyPhase(sim.phase + 1);
+      } else {
+        sim.finished = true;
+        sim.running = false;
+        sim.progress = 1;
+        syncBadges();
+        draw();
+      }
+    }
+
+    function reset() {
+      createSim();
+      applyPhase(0);
+    }
+
+    function run() {
+      if (!sim) createSim();
+      sim.running = true;
+      sim.phase = 0;
+      applyPhase(0);
+      sim.lastTs = performance.now();
+      requestAnimationFrame(tick);
+    }
+
+    function tick(ts) {
+      if (!sim || !sim.running) return;
+      const dt = Math.min(40, ts - sim.lastTs);
+      sim.lastTs = ts;
+      const speedMul = Number(els.speed.value) / 10;
+      sim.phaseTimer += dt * speedMul;
+
+      for (const p of sim.packets) p.t += p.speed * dt;
+      sim.packets = sim.packets.filter(p => p.t < 1);
+      for (const pulse of sim.pulses) { pulse.r += 0.16 * dt * speedMul; pulse.a -= 0.0008 * dt * speedMul; }
+      sim.pulses = sim.pulses.filter(p => p.a > 0);
+
+      if (sim.phaseTimer > sim.phaseDurations[sim.phase]) {
+        if (sim.phase < sim.phaseNames.length - 1) {
+          applyPhase(sim.phase + 1);
+        } else {
+          sim.running = false;
+          sim.finished = true;
+          syncBadges();
+        }
+      }
+      draw();
+      if (sim.running) requestAnimationFrame(tick);
+    }
+
+    function colorForNode(n) {
+      if (n.proposer) return C.purple;
+      if (n.display === 'rep') return C.purple;
+      if (n.display === 'counting') return C.yellow;
+      if (n.display === 'agreed') return C.green;
+      if (n.display === 'faulty' || n.faulty) return C.red;
+      return C.blue;
+    }
+
+    function drawGridAndLabels() {
+      ctx.save();
+      for (const local of sim.locals) {
+        let border = 'rgba(45, 211, 111, 0.8)';
+        if (local.majority === 'red') border = 'rgba(255, 99, 125, 0.82)';
+        if (local.majority === 'split') border = 'rgba(255, 176, 32, 0.82)';
+        ctx.strokeStyle = border;
+        ctx.lineWidth = 1.6;
+        ctx.strokeRect(local.x, local.y, local.w, local.h);
+
+        ctx.fillStyle = 'rgba(4,14,24,.70)';
+        ctx.fillRect(local.x, local.y, local.w, 22);
+        ctx.fillStyle = '#d7e4f8';
+        ctx.font = 'bold 11px Arial';
+        ctx.fillText(`로컬 ${local.id + 1}`, local.x + 6, local.y + 15);
+
+        ctx.textAlign = 'right';
+        ctx.fillStyle = local.majority === 'green' ? C.green : local.majority === 'red' ? C.red : C.yellow;
+        ctx.fillText(local.statusText, local.x + local.w - 6, local.y + 15);
+
+        const barW = local.w - 12;
+        const ratio = local.greenCount / Math.max(1, local.greenCount + local.redCount);
+        ctx.textAlign = 'left';
+        ctx.fillStyle = 'rgba(255,255,255,.08)';
+        ctx.fillRect(local.x + 6, local.y + local.h - 16, barW, 8);
+        ctx.fillStyle = ratio >= .5 ? C.green : C.red;
+        ctx.fillRect(local.x + 6, local.y + local.h - 16, barW * ratio, 8);
+      }
+      ctx.restore();
+    }
+
+    function drawLocalEdges() {
+      ctx.save();
+      for (const local of sim.locals) {
+        ctx.strokeStyle = C.faint;
+        ctx.lineWidth = 1;
+        const arr = local.nodes;
+        for (let i = 0; i < arr.length; i++) {
+          const a = arr[i];
+          let nearest = null, nearest2 = null, d1 = Infinity, d2 = Infinity;
+          for (let j = 0; j < arr.length; j++) {
+            if (i === j) continue;
+            const b = arr[j];
+            const dd = dist(a, b);
+            if (dd < d1) { d2 = d1; nearest2 = nearest; d1 = dd; nearest = b; }
+            else if (dd < d2) { d2 = dd; nearest2 = b; }
+          }
+          for (const b of [nearest, nearest2]) {
+            if (!b) continue;
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+          }
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawRepEdges() {
+      ctx.save();
+      ctx.setLineDash([6, 6]);
+      ctx.strokeStyle = 'rgba(53,216,246,.30)';
+      ctx.lineWidth = 1.6;
+      for (const [a, b] of sim.repEdges) {
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    function drawNodes() {
+      ctx.save();
+      for (const n of sim.nodes) {
+        const color = colorForNode(n);
+        const r = n.rep || n.proposer ? 7.2 : 5.6;
+        ctx.beginPath();
+        ctx.fillStyle = color;
+        ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+        ctx.fill();
+        if (n.rep || n.proposer) {
+          ctx.lineWidth = 2.2;
+          ctx.strokeStyle = C.white;
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.strokeStyle = C.purple;
+          ctx.lineWidth = 2;
+          ctx.arc(n.x, n.y, r + 4, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawPackets() {
+      ctx.save();
+      for (const p of sim.packets) {
+        const x = p.a.x + (p.b.x - p.a.x) * p.t;
+        const y = p.a.y + (p.b.y - p.a.y) * p.t;
+        const color = p.type === 'global' ? C.cyan : C.yellow;
+        const dx = p.b.x - p.a.x, dy = p.b.y - p.a.y;
+        const len = Math.hypot(dx, dy) || 1;
+        const tx = dx / len, ty = dy / len;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = p.type === 'global' ? 2.8 : 2.1;
+        ctx.globalAlpha = 0.30;
+        ctx.beginPath(); ctx.moveTo(x - tx * 18, y - ty * 18); ctx.lineTo(x, y); ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.beginPath(); ctx.fillStyle = color; ctx.arc(x, y, p.type === 'global' ? 6.2 : 5.0, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawPulses() {
+      ctx.save();
+      for (const pulse of sim.pulses) {
+        const cx = pulse.local.x + pulse.local.w / 2;
+        const cy = pulse.local.y + pulse.local.h / 2;
+        ctx.globalAlpha = pulse.a;
+        ctx.strokeStyle = pulse.kind === 'coop' ? C.cyan : pulse.kind === 'proposal' ? C.purple : C.yellow;
+        ctx.lineWidth = pulse.kind === 'coop' ? 3 : 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, pulse.r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    }
+
+    function drawCenterAggregator() {
+      if (mode !== 'CB' || sim.phase < 3) return;
+      const x = canvas.width * 0.5, y = canvas.height * 0.52;
+      ctx.save();
+      ctx.fillStyle = 'rgba(10,24,40,.95)';
+      ctx.strokeStyle = 'rgba(53,216,246,.6)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(x, y, 22, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = C.cyan;
+      ctx.font = 'bold 12px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('GLOBAL', x, y - 2);
+      ctx.fillText('VOTE', x, y + 12);
+      ctx.textAlign = 'left';
+      ctx.restore();
+    }
+
+    function drawBottomBanner() {
+      const y = canvas.height - 54;
+      ctx.save();
+      ctx.fillStyle = 'rgba(6,16,28,.84)';
+      ctx.fillRect(18, y, canvas.width - 36, 40);
+      ctx.strokeStyle = 'rgba(28,53,87,.95)';
+      ctx.strokeRect(18, y, canvas.width - 36, 40);
+      ctx.fillStyle = '#f2f7ff';
+      ctx.font = 'bold 14px Arial';
+      const text = mode === 'CB'
+        ? 'CB-EC: 로컬 majority → representative opinion → cooperative / semi-global aggregation → global consensus'
+        : 'GB-RC: proposal / commit을 relay 기반 gossip-broadcasting으로 전역 확산';
+      ctx.fillText(text, 30, y + 25);
+      ctx.restore();
+    }
+
+    function draw() {
+      if (!sim) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      g.addColorStop(0, '#081425'); g.addColorStop(.45, '#081a2d'); g.addColorStop(1, '#07111f');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      drawGridAndLabels();
+      drawLocalEdges();
+      drawRepEdges();
+      drawPulses();
+      drawCenterAggregator();
+      drawPackets();
+      drawNodes();
+      drawBottomBanner();
+    }
+
+    function setMode(newMode) {
+      mode = newMode;
+      els.modeCB.classList.toggle('active', mode === 'CB');
+      els.modeGB.classList.toggle('active', mode === 'GB');
+      reset();
+    }
+
+    els.modeCB.onclick = () => setMode('CB');
+    els.modeGB.onclick = () => setMode('GB');
+    els.runBtn.onclick = run;
+    els.stepBtn.onclick = nextPhase;
+    els.resetBtn.onclick = reset;
+    [els.grid, els.nodes, els.fault, els.speed].forEach(el => el.addEventListener('input', () => { updateLabels(); reset(); }));
+
+    updateLabels();
+    reset();
+  </script>
+</body>
+
+</html>

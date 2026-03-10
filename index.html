@@ -98,9 +98,23 @@
         min-width: 0;
       }
       
-      #phaseBadge,
-      #progressBadge {
+      #phaseBadge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 92px;
+        overflow: hidden;
+        text-overflow: ellipsis;
         white-space: nowrap;
+      }
+
+      #progressBadge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
       }
 
     .corner-box {
@@ -580,16 +594,18 @@
     }
 
     #phaseBadge {
-      flex: 1 1 auto;
-      min-width: 0;
+      width: 92px;
+      flex: 0 0 92px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     #progressBadge {
-      flex: 0 0 auto;
+      width: 52px;
+      flex: 0 0 52px;
       white-space: nowrap;
+      font-variant-numeric: tabular-nums;
     }
 
     #modeBadge {
@@ -1028,8 +1044,8 @@
       const phaseName = sim.phaseNames[sim.phase] || '완료';
 
       els.modeBadge.textContent = `모드: ${mode === 'CB' ? 'CB-EC' : 'GB-RC'}`;
-      els.phaseBadge.textContent = `단계: ${isMobile() ? getShortPhaseName(phaseName) : phaseName}`;
-      els.progressBadge.textContent = `진행률 ${Math.round(sim.progress * 100)}%`;
+      els.phaseBadge.textContent = getShortPhaseName(phaseName);
+      els.progressBadge.textContent = `${Math.round(sim.progress * 100)}%`;
       els.globalBadge.textContent = done ? `전체 합의: ${getGlobalLabel()}` : '전체 합의: 계산 중';
     }
 
